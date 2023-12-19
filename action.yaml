@@ -37,6 +37,13 @@ inputs:
     description: 'GCS auth key file path'
     default: ''
     required: false
+  workload-identity-provider:
+    description: 'GCP workload identity provider'
+    required: false
+  service-account:
+    description: 'GCP service-account'
+    required: false
+
 outputs:
   cache-hit:
     description: 'A boolean value to indicate an exact match was found for the primary key'
@@ -56,6 +63,16 @@ runs:
         enableCrossOsArchive: ${{ inputs.enableCrossOsArchive }}
         fail-on-cache-miss: ${{ inputs.fail-on-cache-miss }}
         lookup-only: ${{ inputs.lookup-only }}
+    - name: "OpenID Connect Authentication"
+      if: ${{ ! startsWith(runner.name, 'GitHub Actions') && inputs.service-account && inputs.workload-identity-provider }}
+      uses: 'google-github-actions/auth@v1'
+      with:
+        cleanup_credentials: false
+        workload_identity_provider: ${{ inputs.workload-identity-provider }}
+        service_account: ${{ inputs.service-account }}
+    - name: 'Set up Cloud SDK'
+      if: ${{ ! startsWith(runner.name, 'GitHub Actions') && inputs.service-account && inputs.workload-identity-provider  }}
+      uses: 'google-github-actions/setup-gcloud@v1'
     - name: Cache gcs
       if: ${{ ! startsWith(runner.name, 'GitHub Actions') }}
       id: gcs-cache
