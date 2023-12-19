@@ -33,15 +33,14 @@ inputs:
     description: 'Compression method for the archive (gzip or zstd)'
     default: ''
     required: false
-  key-file-name:
-    description: 'GCS auth key file path'
-    default: ''
-    required: false
   workload-identity-provider:
     description: 'GCP workload identity provider'
     required: false
   service-account:
     description: 'GCP service-account'
+    required: false
+  key-file-name:
+    description: 'GCS auth key file path (required for gcs if not providing the service-account and workload-identity-provider)'
     required: false
 
 outputs:
@@ -64,6 +63,7 @@ runs:
         fail-on-cache-miss: ${{ inputs.fail-on-cache-miss }}
         lookup-only: ${{ inputs.lookup-only }}
     - name: "OpenID Connect Authentication"
+      id: openid-connect-auth
       if: ${{ ! startsWith(runner.name, 'GitHub Actions') && inputs.service-account && inputs.workload-identity-provider }}
       uses: 'google-github-actions/auth@v1'
       with:
@@ -83,7 +83,7 @@ runs:
         restore-keys: ${{ inputs.restore-keys }}
         bucket: ${{ inputs.bucket }}
         compression-method: ${{ inputs.compression-method }}
-        key-file-name: ${{ inputs.key-file-name }}
+        key-file-name: ${{ steps.openid-connect-auth.outputs.credentials_file_path || inputs.key-file-name }}
 branding:
   icon: 'archive'
   color: 'gray-dark'
