@@ -1,0 +1,72 @@
+name: 'Cache'
+description: 'Cache artifacts like dependencies and build outputs to to gcs or azure to improve workflow execution time'
+author: 'kopax-polyconseil'
+inputs:
+  path:
+    description: 'A list of files, directories, and wildcard patterns to cache and restore'
+    required: true
+  key:
+    description: 'An explicit key for restoring and saving the cache'
+    required: true
+  restore-keys:
+    description: 'An ordered list of keys to use for restoring stale cache if no cache hit occurred for key. Note `cache-hit` returns false in this case.'
+    required: false
+  upload-chunk-size:
+    description: 'The chunk size used to split up large files during upload, in bytes'
+    required: false
+  enableCrossOsArchive:
+    description: 'An optional boolean when enabled, allows windows runners to save or restore caches that can be restored or saved respectively on other platforms'
+    default: 'false'
+    required: false
+  fail-on-cache-miss:
+    description: 'Fail the workflow if cache entry is not found'
+    default: 'false'
+    required: false
+  lookup-only:
+    description: 'Check if a cache entry exists for the given input(s) (key, restore-keys) without downloading the cache'
+    default: 'false'
+    required: false
+  bucket:
+    description: 'Name of the bucket to store the cache into'
+    required: false
+  compression-method: 
+    description: 'Compression method for the archive (gzip or zstd)'
+    default: ''
+    required: false
+  key-file-name:
+    description: 'GCS auth key file path'
+    default: ''
+    required: false
+outputs:
+  cache-hit:
+    description: 'A boolean value to indicate an exact match was found for the primary key'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Cache github
+      if: ${{ startsWith(runner.name, 'GitHub Actions') }}
+      id: cache-github
+      uses: actions/cache@v3
+      with:
+        path: ${{ inputs.path }}
+        key: ${{ inputs.key }}
+        restore-keys: ${{ inputs.restore-keys }}
+        upload-chunk-size: ${{ inputs.upload-chunk-size }}
+        enableCrossOsArchive: ${{ inputs.enableCrossOsArchive }}
+        fail-on-cache-miss: ${{ inputs.fail-on-cache-miss }}
+        lookup-only: ${{ inputs.lookup-only }}
+    - name: Cache gcs
+      if: ${{ ! startsWith(runner.name, 'GitHub Actions') }}
+      id: gcs-cache
+      uses: kopax-polyconseil/gcs-cache-action@v1.0.1
+      with:
+        path: ${{ inputs.path }}
+        key: ${{ inputs.key }}
+        restore-keys: ${{ inputs.restore-keys }}
+        bucket: ${{ inputs.bucket }}
+        compression-method: ${{ inputs.compression-method }}
+        key-file-name: ${{ inputs.key-file-name }}
+branding:
+  icon: 'archive'
+  color: 'gray-dark'
