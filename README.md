@@ -12,7 +12,7 @@ This composite action will decide weither use gcs or azure cache.
 ```yaml
 - name: Cache the node_modules
   id: node-modules-cache
-  uses: kopax-polyconseil/gcs-or-azure-cache-action@v3
+  uses: pass-culture-github-actions/cache@v1.0.0
   with:
     bucket: my-ci-cache
     path: node_modules
@@ -25,7 +25,7 @@ This composite action will decide weither use gcs or azure cache.
 
 This composite action use under the hood the two following actions:
 
-- gcs: https://github.com/kopax-polyconseil/gcs-cache-action
+- gcs: https://github.com/pass-culture-github-actions/gcs-cache
 - azure: https://github.com/actions/cache
 
 Read their documentation for all their inputs.

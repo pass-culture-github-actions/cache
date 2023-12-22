@@ -1,6 +1,6 @@
-name: 'Cache'
-description: 'Cache artifacts like dependencies and build outputs to to gcs or azure to improve workflow execution time'
-author: 'kopax-polyconseil'
+name: 'Cache GCS for self-hosted and Azure for github-runner'
+description: 'Cache artifacts to gcs for self-hosted or azure for github-runner to improve workflow execution time'
+author: 'passCulture'
 inputs:
   path:
     description: 'A list of files, directories, and wildcard patterns to cache and restore'
@@ -67,7 +67,6 @@ runs:
       if: ${{ ! startsWith(runner.name, 'GitHub Actions') && inputs.service-account && inputs.workload-identity-provider }}
       uses: 'google-github-actions/auth@v1'
       with:
-        cleanup_credentials: false
         workload_identity_provider: ${{ inputs.workload-identity-provider }}
         service_account: ${{ inputs.service-account }}
     - name: 'Set up Cloud SDK'
@@ -76,7 +75,7 @@ runs:
     - name: Cache gcs
       if: ${{ ! startsWith(runner.name, 'GitHub Actions') }}
       id: gcs-cache
-      uses: kopax-polyconseil/gcs-cache-action@v1.0.1
+      uses: pass-culture-github-actions/gcs-cache@v1.0.0
       with:
         path: ${{ inputs.path }}
         key: ${{ inputs.key }}
